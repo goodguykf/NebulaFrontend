@@ -1,6 +1,10 @@
 @echo off
 rem Starts the Rail Intelligence app and opens it in the default browser.
 cd /d "%~dp0backend"
+rem Keep Python and numba caches out of the app folder.
+set PYTHONDONTWRITEBYTECODE=1
+set NUMBA_CACHE_DIR=%TEMP%
+ebula_numba_cache
 
 where python >nul 2>nul
 if errorlevel 1 (
