@@ -1,0 +1,15 @@
+.git
+.github
+.claude
+.cursor
+.expo
+.vercel
+dist
+web-build
+node_modules
+ios
+android
+*.md
+.env
+.env*.local
+.DS_Store
