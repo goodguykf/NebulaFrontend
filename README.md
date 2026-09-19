@@ -46,7 +46,7 @@ Two ways to run the full app:
 
 1. **One process (used for the demo):** export the web build into the backend and start it.
    ```bash
-   EXPO_PUBLIC_USE_MOCK_API=false EXPO_PUBLIC_API_URL= npx expo export -p web --output-dir backend/frontend_dist
+   EXPO_PUBLIC_USE_MOCK_API=false EXPO_PUBLIC_API_URL= npx expo export -p web --clear --output-dir backend/frontend_dist
    cd backend && pip install -r requirements.txt && uvicorn main:app    # open http://127.0.0.1:8000
    ```
 2. **Separate dev servers:** `uvicorn main:app` in `backend/`, then

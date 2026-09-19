@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from fastapi import APIRouter, File, Query, UploadFile
+from fastapi import APIRouter, File, UploadFile
 from starlette.concurrency import run_in_threadpool
 
 from api import services
@@ -20,11 +20,10 @@ router = APIRouter(prefix="/api/door", tags=["Door - abnormal resistance"])
 async def predict_door(
     file: UploadFile = File(..., description="One continuous door-controller stream (.csv)."),
     format: OutputFormat = FORMAT_QUERY,
-    confidence: bool = Query(False, description="Add a confidence column to the CSV output."),
 ):
     with TemporaryDirectory(prefix="nebula_door_") as tmp:
         [(file_id, path)] = await save_uploads([file], Path(tmp), services.CSV_EXTENSIONS, "Door")
         segments = await run_in_threadpool(services.run_door, path)
     if format == "csv":
-        return csv_download(services.door_csv(segments, confidence), services.CSV_FILENAMES["door"])
+        return csv_download(services.door_csv(segments), services.CSV_FILENAMES["door"])
     return {"subsystem": "door", "file_id": file_id, "segments": segments}

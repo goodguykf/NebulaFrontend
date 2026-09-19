@@ -87,6 +87,13 @@ def test_csv_download(client, fakes):
     assert response.text == "file_id,prediction\na.csv,Normal\n"
 
 
+def test_door_csv_download_has_no_confidence(client, fakes):
+    analysis_id = create(client, "door", ["door.csv"]).json()["id"]
+    text = client.get(f"/api/v1/analyses/{analysis_id}/predictions.csv").text
+    assert text.splitlines()[0] == "start_time,end_time,prediction"
+    assert text.splitlines()[2] == "2023-7-5-0-0-15-5,2023-7-5-0-0-18-765,Abnormal resistance"
+
+
 def test_door_result_shape(client, fakes):
     analysis_id = create(client, "door", ["door.csv"]).json()["id"]
     result = client.get(f"/api/v1/analyses/{analysis_id}").json()["result"]

@@ -4,13 +4,22 @@ import { typography } from "@/constants/typography";
 import { useAppConfig } from "@/context/AppConfigProvider";
 import { PREDICTION_CSV } from "@/mocks/predictions/csv";
 import { useAppTheme } from "@/theme/AppThemeProvider";
-import { AnalysisRecord } from "@/types/analysis";
+import { AnalysisRecord, SubsystemType } from "@/types/analysis";
 import * as Linking from "expo-linking";
 import { useCallback } from "react";
 import { Platform, Pressable, StyleSheet, Text } from "react-native";
 
 interface DownloadPredictionsButtonProps {
   record: AnalysisRecord;
+}
+
+/** Column count of each official submission file; anything beyond it (Door confidence) is dropped. */
+const SUBMISSION_COLUMNS: Record<SubsystemType, number> = { acv: 2, door: 3, rail: 2, shm: 2 };
+
+function toSubmissionCsv(text: string, columns: number): string {
+  const lines = text.split(/\r?\n/).filter((line) => line.trim().length > 0);
+  const rows = lines.map((line) => line.split(",").slice(0, columns).join(","));
+  return `${rows.join("\n")}\n`;
 }
 
 function saveFromBrowser(href: string, filename: string): void {
@@ -33,7 +42,11 @@ export function DownloadPredictionsButton({ record }: DownloadPredictionsButtonP
       if (Platform.OS !== "web") {
         return;
       }
-      const blob = new Blob([PREDICTION_CSV[record.subsystem]], { type: "text/csv" });
+      const csv = toSubmissionCsv(
+        PREDICTION_CSV[record.subsystem],
+        SUBMISSION_COLUMNS[record.subsystem],
+      );
+      const blob = new Blob([csv], { type: "text/csv" });
       const href = URL.createObjectURL(blob);
       saveFromBrowser(href, filename);
       URL.revokeObjectURL(href);

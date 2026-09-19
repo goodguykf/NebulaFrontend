@@ -93,8 +93,9 @@ Settings (environment variables, all optional):
 
 Add `?format=csv` to any of them to get the hackathon submission file instead of JSON
 (`acv_predictions.csv`, `door_predictions.csv`, `rail_predictions.csv`,
-`shm_predictions.csv`). The Door CSV has the official three columns; add
-`&confidence=true` for a fourth `confidence` column.
+`shm_predictions.csv`). The Door CSV has exactly the official three columns
+(`start_time,end_time,prediction`); confidence is returned in the JSON and shown in the
+app, but never written to the CSV.
 
 Job API used by the web apps (same models, same CSVs):
 
@@ -168,8 +169,11 @@ To rebuild it after frontend changes:
 npm ci
 set EXPO_PUBLIC_USE_MOCK_API=false
 set EXPO_PUBLIC_API_URL=
-npx expo export -p web --output-dir backend/frontend_dist
+npx expo export -p web --clear --output-dir backend/frontend_dist
 ```
+
+`--clear` matters: Metro caches the inlined `EXPO_PUBLIC_*` values, so without it a build can
+silently keep the previous mock/live setting.
 
 With `EXPO_PUBLIC_API_URL` empty the app calls the API on its own origin, so
 `uvicorn main:app` alone serves the complete application. To run the frontend separately
@@ -225,7 +229,7 @@ Known, deliberate differences from the literal notebook code:
 - **Rail, recordings longer than 1 s** use their first 10,000 samples (the models were trained
   on 1 s recordings); shorter ones are rejected with a 400.
 - **Door CSV download** has the official three columns. The notebook's file had a fourth
-  `confidence` column; request it with `?confidence=true` if wanted.
+  `confidence` column, which the submission schema does not define, so it is left out.
 - **Door/Rail export scripts** were not written because both notebooks already persist their
   final models; the saved files are loaded unchanged.
 

@@ -47,10 +47,10 @@ def test_csv_output_uses_official_three_columns(client, fake_door):
     assert text.splitlines()[2] == "2023-7-5-0-0-15-5,2023-7-5-0-0-18-765,Abnormal resistance"
 
 
-def test_csv_output_with_confidence(client, fake_door):
+def test_csv_output_never_contains_confidence(client, fake_door):
     text = upload(client, params={"format": "csv", "confidence": "true"}).text
-    assert text.splitlines()[0] == "start_time,end_time,prediction,confidence"
-    assert text.splitlines()[1].endswith(",Normal,0.923")
+    assert "confidence" not in text
+    assert all(len(line.split(",")) == 3 for line in text.splitlines())
 
 
 def test_wrong_extension(client, fake_door):

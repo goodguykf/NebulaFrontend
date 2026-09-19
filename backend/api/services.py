@@ -93,15 +93,10 @@ def acv_csv(results: Sequence[dict]) -> str:
     return _to_csv(["file_id", "ranked_cars"], rows)
 
 
-def door_csv(segments: Sequence[dict], include_confidence: bool = False) -> str:
-    header = ["start_time", "end_time", "prediction"]
+def door_csv(segments: Sequence[dict]) -> str:
+    """Official Door schema only. Confidence is shown in the app, never written to the CSV."""
     rows = [[seg["start_time"], seg["end_time"], seg["prediction"]] for seg in segments]
-    if include_confidence:
-        header.append("confidence")
-        for row, seg in zip(rows, segments):
-            confidence = seg.get("confidence")
-            row.append("" if confidence is None else repr(float(confidence)))
-    return _to_csv(header, rows)
+    return _to_csv(["start_time", "end_time", "prediction"], rows)
 
 
 def rail_csv(results: Sequence[dict]) -> str:
