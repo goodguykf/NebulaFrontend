@@ -100,6 +100,20 @@ function queuedRecord(
   }
 }
 
+function completeMockAnalysis(id: string): void {
+  const index = store.findIndex((item) => item.id === id);
+  const record = store[index];
+  if (!record) {
+    return;
+  }
+  const template = store.find(
+    (item) => item.subsystem === record.subsystem && item.status === "completed",
+  );
+  if (template) {
+    store[index] = { ...template, id: record.id, filename: record.filename, createdAt: record.createdAt };
+  }
+}
+
 export async function mockCreateAnalysis(
   subsystem: SubsystemType,
   filenames: string[],
@@ -108,6 +122,7 @@ export async function mockCreateAnalysis(
   const filename = filenames[0] ?? `${subsystem}_upload`;
   const id = `analysis_${subsystem}_${Date.now()}`;
   store.unshift(queuedRecord(id, subsystem, filename));
+  setTimeout(() => completeMockAnalysis(id), 1200);
   return { id, status: "queued" };
 }
 

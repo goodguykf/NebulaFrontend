@@ -25,21 +25,21 @@ export function SHMAnalysisView({ result }: SHMAnalysisViewProps) {
         <MetricCard
           label="Files"
           value={String(result.files.length)}
-          detail="Published SHM predictions"
+          detail="Files with a damage prediction"
         />
         {min != null && max != null ? (
           <MetricCard
             label="Damage range"
             value={`${formatDamage(min)}–${formatDamage(max)}`}
-            detail="Minimum and maximum of the exported values"
+            detail="Minimum and maximum predicted damage"
           />
         ) : null}
       </View>
 
-      <SectionHeader title="Published damage values" />
+      <SectionHeader title="Predicted damage by file" />
       <Card padded={false}>
         <Text style={[typography.caption, styles.caption, { color: colors.textMuted }]}>
-          Each row is a file_id and prediction from shm_predictions.csv. No severity band is applied.
+          Each row is one uploaded file and its predicted cumulative fatigue damage. No severity band is applied.
         </Text>
         <View style={[styles.headerRow, { borderBottomColor: colors.border }]}>
           <Text style={[styles.cellFile, styles.head, { color: colors.textMuted }]}>File</Text>

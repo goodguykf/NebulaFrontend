@@ -2,6 +2,7 @@ import { ACVAnalysisView } from "@/components/acv/ACVAnalysisView";
 import { AppHeader } from "@/components/common/AppHeader";
 import { BackButton } from "@/components/common/BackButton";
 import { Card } from "@/components/common/Card";
+import { DownloadPredictionsButton } from "@/components/common/DownloadPredictionsButton";
 import { ErrorState } from "@/components/common/ErrorState";
 import { LoadingState } from "@/components/common/LoadingState";
 import { ScreenContainer } from "@/components/common/ScreenContainer";
@@ -53,6 +54,7 @@ export default function ACVAnalysisScreen() {
             <Text style={[typography.caption, { color: colors.textMuted }]}>
               {formatTimestamp(record.createdAt)}
             </Text>
+            <DownloadPredictionsButton record={record} />
           </Card>
 
           {record.result ? (

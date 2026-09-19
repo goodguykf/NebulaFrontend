@@ -1,4 +1,4 @@
-import { getApiBaseUrl, REQUEST_TIMEOUT_MS } from "@/constants/config";
+import { getApiBaseUrl, REQUEST_TIMEOUT_MS, UPLOAD_TIMEOUT_MS } from "@/constants/config";
 
 export class ApiError extends Error {
   status?: number;
@@ -28,6 +28,14 @@ async function parseErrorMessage(response: Response): Promise<string> {
         typeof payload.error === "string"
       ) {
         return payload.error;
+      }
+      if (
+        payload &&
+        typeof payload === "object" &&
+        "detail" in payload &&
+        typeof payload.detail === "string"
+      ) {
+        return payload.detail;
       }
       if (
         payload &&
@@ -91,5 +99,6 @@ export async function apiUpload<T>(path: string, formData: FormData): Promise<T>
   return apiRequest<T>(path, {
     method: "POST",
     body: formData,
+    timeoutMs: UPLOAD_TIMEOUT_MS,
   });
 }

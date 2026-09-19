@@ -31,8 +31,18 @@ export function setMockApiEnabled(enabled: boolean): void {
 }
 
 export function getApiBaseUrl(): string {
-  return (process.env.EXPO_PUBLIC_API_URL ?? "").replace(/\/$/, "");
+  const configured = (process.env.EXPO_PUBLIC_API_URL ?? "").trim().replace(/\/$/, "");
+  if (configured) {
+    return configured;
+  }
+  // When the FastAPI backend serves this web build itself, the API is same-origin.
+  if (typeof window !== "undefined" && window.location?.origin?.startsWith("http")) {
+    return window.location.origin;
+  }
+  return "";
 }
 
 export const ANALYSIS_POLL_INTERVAL_MS = 2000;
 export const REQUEST_TIMEOUT_MS = 15000;
+// Rail uploads can be dozens of 17 MB recordings.
+export const UPLOAD_TIMEOUT_MS = 15 * 60 * 1000;

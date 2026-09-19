@@ -1,4 +1,5 @@
 import { getAnalysis } from "@/api/analyses";
+import { ANALYSIS_POLL_INTERVAL_MS } from "@/constants/config";
 import { useAppConfig } from "@/context/AppConfigProvider";
 import { AnalysisRecord } from "@/types/analysis";
 import { useCallback, useEffect, useState } from "react";
@@ -40,6 +41,19 @@ export function useAnalysis(analysisId: string | undefined): UseAnalysisResult {
   useEffect(() => {
     void load();
   }, [load]);
+
+  const pending = record?.status === "queued" || record?.status === "processing";
+  useEffect(() => {
+    if (!pending || !analysisId) {
+      return undefined;
+    }
+    const timer = setInterval(() => {
+      getAnalysis(analysisId)
+        .then(setRecord)
+        .catch(() => undefined);
+    }, ANALYSIS_POLL_INTERVAL_MS);
+    return () => clearInterval(timer);
+  }, [analysisId, pending]);
 
   return { record, loading, error, reload: load };
 }

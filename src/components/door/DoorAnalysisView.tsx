@@ -66,7 +66,7 @@ export function DoorAnalysisView({ result }: DoorAnalysisViewProps) {
         <MetricCard
           label="Cycles"
           value={String(result.totalSegments)}
-          detail="Published door segments"
+          detail="Door cycles found in the stream"
         />
         <MetricCard
           label="Abnormal resistance"
@@ -75,11 +75,11 @@ export function DoorAnalysisView({ result }: DoorAnalysisViewProps) {
         />
       </View>
 
-      <SectionHeader title="Published cycles" />
+      <SectionHeader title="Detected cycles" />
       <Card padded={false}>
         <Text style={[typography.caption, styles.caption, { color: colors.textMuted }]}>
-          Labels and scores are taken from door_predictions.csv. The score column is the exported
-          confidence value.
+          One row per door cycle found in the uploaded stream. The score column is the model&apos;s
+          confidence in the label shown.
         </Text>
         <View style={[styles.headerRow, { borderBottomColor: colors.border }]}>
           <Text style={[styles.cellId, styles.head, { color: colors.textMuted }]}>Cycle</Text>

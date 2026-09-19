@@ -1,5 +1,5 @@
 import { apiRequest, apiUpload } from "@/api/client";
-import { isMockApiEnabled } from "@/constants/config";
+import { getApiBaseUrl, isMockApiEnabled } from "@/constants/config";
 import {
   mockCreateAnalysis,
   mockGetAnalyses,
@@ -18,6 +18,9 @@ export interface AnalysisUploadFile {
   uri: string;
   name: string;
   mimeType?: string;
+  sizeBytes?: number;
+  /** Browser File/Blob picked on web; native uploads use `uri` instead. */
+  file?: Blob;
 }
 
 export interface GetAnalysesOptions {
@@ -69,6 +72,10 @@ export async function createAnalysis(
   const formData = new FormData();
   formData.append("subsystem", subsystem);
   files.forEach((file) => {
+    if (file.file) {
+      formData.append("files", file.file, file.name);
+      return;
+    }
     formData.append("files", {
       uri: file.uri,
       name: file.name,
@@ -77,4 +84,9 @@ export async function createAnalysis(
   });
 
   return apiUpload<CreateAnalysisResponse>("/api/v1/analyses", formData);
+}
+
+/** Submission-format CSV produced by the backend for a completed analysis. */
+export function getPredictionsCsvUrl(id: string): string {
+  return `${getApiBaseUrl()}/api/v1/analyses/${encodeURIComponent(id)}/predictions.csv`;
 }

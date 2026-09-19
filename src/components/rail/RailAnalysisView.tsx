@@ -60,10 +60,10 @@ export function RailAnalysisView({ result }: RailAnalysisViewProps) {
 
       {result.files && result.files.length > 0 ? (
         <>
-          <SectionHeader title="Published files" />
+          <SectionHeader title="Recordings" />
           <Card padded={false}>
             <Text style={[typography.caption, styles.fileCaption, { color: colors.textMuted }]}>
-              Each row is a file_id and class from rail_predictions.csv.
+              Each row is one uploaded recording and its predicted class.
             </Text>
             {result.files.map((file) => (
               <View
