@@ -1,7 +1,7 @@
-import { mockACVResult } from "@/mocks/acv";
-import { mockDoorResult } from "@/mocks/door";
-import { mockRailResult } from "@/mocks/rail";
-import { mockSHMResult } from "@/mocks/shm";
+import { mockACVFilename, mockACVResult } from "@/mocks/acv";
+import { mockDoorFilename, mockDoorResult } from "@/mocks/door";
+import { mockRailFilename, mockRailResult } from "@/mocks/rail";
+import { mockSHMFilename, mockSHMResult } from "@/mocks/shm";
 import { AnalysisRecord, CreateAnalysisResponse, SubsystemType } from "@/types/analysis";
 
 const now = Date.now();
@@ -14,7 +14,7 @@ const store: AnalysisRecord[] = [
   {
     id: "analysis_acv_001",
     subsystem: "acv",
-    filename: "acv_test_case.xlsx",
+    filename: mockACVFilename,
     createdAt: minutesAgo(2),
     status: "completed",
     result: mockACVResult,
@@ -22,7 +22,7 @@ const store: AnalysisRecord[] = [
   {
     id: "analysis_door_001",
     subsystem: "door",
-    filename: "Test.csv",
+    filename: mockDoorFilename,
     createdAt: minutesAgo(15),
     status: "completed",
     result: mockDoorResult,
@@ -30,7 +30,7 @@ const store: AnalysisRecord[] = [
   {
     id: "analysis_rail_001",
     subsystem: "rail",
-    filename: "Test4.csv",
+    filename: mockRailFilename,
     createdAt: minutesAgo(23),
     status: "completed",
     result: mockRailResult,
@@ -38,29 +38,10 @@ const store: AnalysisRecord[] = [
   {
     id: "analysis_shm_001",
     subsystem: "shm",
-    filename: "test05.csv",
+    filename: mockSHMFilename,
     createdAt: minutesAgo(61),
     status: "completed",
     result: mockSHMResult,
-  },
-  {
-    id: "analysis_rail_002",
-    subsystem: "rail",
-    filename: "Test12.csv",
-    createdAt: minutesAgo(180),
-    status: "completed",
-    result: {
-      type: "rail",
-      prediction: "Side II",
-    },
-  },
-  {
-    id: "analysis_door_002",
-    subsystem: "door",
-    filename: "door_stream_invalid.csv",
-    createdAt: minutesAgo(240),
-    status: "failed",
-    error: "Invalid CSV format",
   },
 ];
 

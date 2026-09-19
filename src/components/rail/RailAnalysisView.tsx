@@ -3,6 +3,8 @@ import { RailConfusionMatrix } from "@/components/rail/RailConfusionMatrix";
 import { RailStatusChart } from "@/components/rail/RailStatusChart";
 import { Card } from "@/components/common/Card";
 import { SectionHeader } from "@/components/common/SectionHeader";
+import { StatusBadge } from "@/components/common/StatusBadge";
+import { dataType } from "@/constants/fonts";
 import { spacing } from "@/constants/spacing";
 import { typography } from "@/constants/typography";
 import { RailResult } from "@/types/rail";
@@ -56,6 +58,30 @@ export function RailAnalysisView({ result }: RailAnalysisViewProps) {
         </>
       ) : null}
 
+      {result.files && result.files.length > 0 ? (
+        <>
+          <SectionHeader title="Published files" />
+          <Card padded={false}>
+            <Text style={[typography.caption, styles.fileCaption, { color: colors.textMuted }]}>
+              Each row is a file_id and class from rail_predictions.csv.
+            </Text>
+            {result.files.map((file) => (
+              <View
+                key={file.fileId}
+                style={[styles.fileRow, { borderBottomColor: colors.border }]}
+                accessibilityLabel={`${file.fileId}. ${file.prediction}`}
+              >
+                <Text style={[styles.fileId, { color: colors.text }]}>{file.fileId}</Text>
+                <StatusBadge
+                  label={file.prediction}
+                  tone={file.prediction === "Normal" ? "success" : "warning"}
+                />
+              </View>
+            ))}
+          </Card>
+        </>
+      ) : null}
+
       {scores ? (
         <>
           <SectionHeader title="Model details" />
@@ -88,4 +114,22 @@ const styles = StyleSheet.create({
   caption: {
     marginBottom: spacing.md,
   },
+  fileCaption: {
+    marginBottom: spacing.sm,
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.md,
+  },
+  fileRow: {
+    minHeight: 44,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: spacing.sm,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderBottomWidth: 1,
+  },
+  fileId: dataType({
+    fontSize: 13,
+  }),
 });

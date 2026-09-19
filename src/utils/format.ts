@@ -125,12 +125,13 @@ function shmHeadline(result: SHMResult, filename: string): string | undefined {
   const match = result.files.find(
     (file) => file.fileId === filename || filename.startsWith(file.fileId),
   );
-  const sorted = [...result.files].sort((a, b) => a.fileId.localeCompare(b.fileId));
-  const value = match?.prediction ?? sorted[0]?.prediction;
-  if (value == null) {
+  if (match) {
+    return `Damage ${formatDamage(match.prediction)}`;
+  }
+  if (result.files.length === 0) {
     return undefined;
   }
-  return `Damage ${formatDamage(value)}`;
+  return `${result.files.length} files`;
 }
 
 export function formatAnalysisSummary(record: AnalysisRecord): string {

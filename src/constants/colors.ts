@@ -1,20 +1,21 @@
 export const palette = {
-  navy950: "#070B14",
-  navy900: "#0B1220",
-  navy800: "#121A2B",
-  navy700: "#182338",
-  navy600: "#223049",
-  slate200: "#D7E0EC",
-  slate400: "#9AA8BC",
-  slate500: "#7B8BA3",
-  white: "#F7FAFC",
-  blue: "#4C8DFF",
-  teal: "#2EC4B6",
-  amber: "#F0B429",
-  orange: "#F08A5D",
-  red: "#E85D4C",
-  green: "#3DDC97",
-  purple: "#8B7CFF",
+  navy950: "#0A1420",
+  navy900: "#0E151D",
+  navy800: "#151E28",
+  navy700: "#1C2733",
+  navy600: "#26313D",
+  slate200: "#E8EDF2",
+  slate400: "#90A1B1",
+  slate500: "#8FA3BA",
+  white: "#E8EDF2",
+  blue: "#4E9BD8",
+  teal: "#43B486",
+  amber: "#D6A03C",
+  orange: "#E0834A",
+  red: "#E4645E",
+  green: "#43B486",
+  purple: "#9578C8",
+  depot: "#E8A33C",
 } as const;
 
 export type ThemeColors = {
@@ -32,6 +33,7 @@ export type ThemeColors = {
   warning: string;
   danger: string;
   overlay: string;
+  depot: string;
   chartGrid: string;
   heatmap: readonly string[];
   subsystems: {
@@ -46,7 +48,7 @@ export const darkColors: ThemeColors = {
   background: palette.navy900,
   surface: palette.navy800,
   surfaceElevated: palette.navy700,
-  border: "rgba(215, 224, 236, 0.12)",
+  border: "#26313D",
   text: palette.white,
   textSecondary: palette.slate200,
   textMuted: palette.slate400,
@@ -57,8 +59,9 @@ export const darkColors: ThemeColors = {
   warning: palette.amber,
   danger: palette.red,
   overlay: "rgba(7, 11, 20, 0.72)",
+  depot: palette.depot,
   chartGrid: "rgba(215, 224, 236, 0.08)",
-  heatmap: ["#152033", "#1B4B6B", "#2E8BC0", "#F0B429", "#E85D4C"],
+  heatmap: ["#152033", "#1B4B6B", "#2E8BC0", "#D6A03C", "#E4645E"],
   subsystems: {
     acv: palette.teal,
     door: palette.orange,
@@ -68,26 +71,27 @@ export const darkColors: ThemeColors = {
 };
 
 export const lightColors: ThemeColors = {
-  background: "#EEF2F7",
+  background: "#EEF1F4",
   surface: "#FFFFFF",
-  surfaceElevated: "#F7FAFC",
-  border: "rgba(18, 26, 43, 0.10)",
-  text: "#102033",
-  textSecondary: "#334155",
-  textMuted: "#64748B",
-  tint: "#2F6FED",
-  tabBar: "#FFFFFF",
-  tabIconDefault: "#94A3B8",
-  success: "#0F9F6E",
-  warning: "#C4850A",
-  danger: "#D64539",
+  surfaceElevated: "#E6EBF0",
+  border: "#D5DCE3",
+  text: "#16202B",
+  textSecondary: "#16202B",
+  textMuted: "#5C6B7A",
+  tint: "#2B6CA3",
+  tabBar: "#0F1F33",
+  tabIconDefault: "#8FA3BA",
+  success: "#2E8B60",
+  warning: "#B8801C",
+  danger: "#C9403A",
   overlay: "rgba(15, 23, 42, 0.45)",
+  depot: "#C97A14",
   chartGrid: "rgba(15, 23, 42, 0.08)",
-  heatmap: ["#E2E8F0", "#93C5FD", "#3B82F6", "#F59E0B", "#DC2626"],
+  heatmap: ["#E2E8F0", "#93C5FD", "#3C7FB1", "#B8801C", "#C9403A"],
   subsystems: {
-    acv: "#0F9C9A",
-    door: "#D97706",
-    rail: "#2F6FED",
-    shm: "#6D5EF2",
+    acv: "#2E8B60",
+    door: "#C4632B",
+    rail: "#2B6CA3",
+    shm: "#7D5BA6",
   },
 };

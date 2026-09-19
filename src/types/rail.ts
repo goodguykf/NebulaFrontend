@@ -25,9 +25,15 @@ export interface RailStatusCounts {
   sideII: number;
 }
 
+export interface RailFilePrediction {
+  fileId: string;
+  prediction: RailPrediction;
+}
+
 export interface RailResult {
   type: "rail";
   prediction: RailPrediction;
+  files?: RailFilePrediction[];
   /**
    * Optional counts of classified windows/files per official class.
    * Do not treat these as severity scores.

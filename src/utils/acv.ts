@@ -1,7 +1,7 @@
 import { ACVCarRank, ACVResult, ACVTelemetrySeries } from "@/types/acv";
 import { AnalysisRecord } from "@/types/analysis";
 
-export const MOCK_ACV_RANKING = "03|01|05|02|04|06|07|08";
+export const MOCK_ACV_RANKING = "01|04|07|03|08|06|02|05";
 
 export function parseACVRanking(value: string): ACVCarRank[] {
   const carIds = value

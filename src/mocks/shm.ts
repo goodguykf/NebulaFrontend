@@ -1,13 +1,6 @@
+import { PREDICTION_CSV } from "@/mocks/predictions/csv";
 import { SHMResult } from "@/types/shm";
+import { parseSHMPredictionsCsv } from "@/utils/parsePredictions";
 
-export const mockSHMResult: SHMResult = {
-  type: "shm",
-  files: [
-    { fileId: "test01.csv", prediction: 0.0342 },
-    { fileId: "test02.csv", prediction: 0.0518 },
-    { fileId: "test03.csv", prediction: 0.0287 },
-    { fileId: "test04.csv", prediction: 0.0431 },
-    { fileId: "test05.csv", prediction: 0.0396 },
-    { fileId: "test06.csv", prediction: 0.0475 },
-  ],
-};
+export const mockSHMFilename = "shm_predictions.csv";
+export const mockSHMResult: SHMResult = parseSHMPredictionsCsv(PREDICTION_CSV.shm);

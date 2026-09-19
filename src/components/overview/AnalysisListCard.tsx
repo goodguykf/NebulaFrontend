@@ -22,6 +22,7 @@ export function AnalysisListCard({ record, onPress }: AnalysisListCardProps) {
       onPress={() => onPress(record)}
       accessibilityLabel={`${meta.shortLabel}. ${record.filename}. ${formatAnalysisSummary(record)}. ${formatRelativeTime(record.createdAt)}`}
       accessibilityHint="Opens analysis details"
+      style={styles.card}
     >
       <View style={styles.row}>
         <View style={[styles.mark, { backgroundColor: colors.subsystems[record.subsystem] }]} />
@@ -65,5 +66,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     gap: spacing.sm,
+  },
+  card: {
+    borderRadius: 5,
   },
 });

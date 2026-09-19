@@ -1,4 +1,5 @@
-import { AnalysisRecord } from "@/types/analysis";
+import { AnalysisRecord, SubsystemType } from "@/types/analysis";
+import { getLatestCompletedAnalysis } from "@/utils/analysis";
 import { formatSubsystemPath } from "@/utils/format";
 import { Href, useRouter } from "expo-router";
 import { useCallback } from "react";
@@ -24,5 +25,17 @@ export function useAnalysisNavigation() {
     [router],
   );
 
-  return { openAnalysis, openAnalyze };
+  const openSubsystemDashboard = useCallback(
+    (subsystem: SubsystemType, records: AnalysisRecord[]) => {
+      const latest = getLatestCompletedAnalysis(records, subsystem);
+      if (latest) {
+        router.push(formatSubsystemPath(subsystem, latest.id) as Href);
+        return;
+      }
+      router.push({ pathname: "/analyze", params: { subsystem } });
+    },
+    [router],
+  );
+
+  return { openAnalysis, openAnalyze, openSubsystemDashboard };
 }
