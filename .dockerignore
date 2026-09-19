@@ -16,3 +16,7 @@ android
 npm-debug.*
 *.tsbuildinfo
 expo-env.d.ts
+
+# Python API; not part of the static web image
+backend/
+start_app.bat

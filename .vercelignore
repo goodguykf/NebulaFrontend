@@ -1,0 +1,3 @@
+# Python API; Vercel only builds the Expo web app
+backend/
+start_app.bat

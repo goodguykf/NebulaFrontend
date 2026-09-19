@@ -1,0 +1,15 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+.env
+*.log
+
+# numba on-disk JIT cache
+*.nbi
+*.nbc
+
+# Exported Expo web build is generated (see README, "Bundling the frontend").
+# Remove this line if you want to commit the build together with the backend.
+# frontend_dist/

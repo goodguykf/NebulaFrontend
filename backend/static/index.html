@@ -1,0 +1,374 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Train Condition Monitoring</title>
+<style>
+  :root {
+    --bg: #f4f5f7; --surface: #ffffff; --surface-2: #eef0f4; --border: #d9dde5;
+    --text: #151a24; --muted: #5b6475; --accent: #1f5fd1; --accent-text: #ffffff;
+    --ok: #17703c; --ok-bg: #e3f4e9; --bad: #b3261e; --bad-bg: #fbe6e4;
+    --warn: #8a5a00; --warn-bg: #fdf0d2; --bar: #4a7fe0; --bar-track: #e3e7ef;
+    --radius: 12px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f131a; --surface: #181d27; --surface-2: #212836; --border: #2e3645;
+      --text: #e9ecf2; --muted: #9aa4b6; --accent: #6f9df2; --accent-text: #0b1220;
+      --ok: #6fd596; --ok-bg: #143222; --bad: #ff8f86; --bad-bg: #3d1a18;
+      --warn: #f2c25c; --warn-bg: #3a2c0c; --bar: #6f9df2; --bar-track: #2a3140;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+    font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 1040px; margin: 0 auto; padding: 24px 16px 64px; }
+  header { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  h1 { font-size: 1.6rem; margin: 0; letter-spacing: -0.01em; }
+  h2 { font-size: 1.05rem; margin: 32px 0 12px; display: flex; gap: 10px; align-items: center; }
+  .step { width: 26px; height: 26px; border-radius: 50%; background: var(--accent); color: var(--accent-text);
+    display: inline-grid; place-items: center; font-size: .85rem; font-weight: 700; flex: none; }
+  p.lead { color: var(--muted); margin: 0 0 8px; max-width: 70ch; }
+  .health { font-size: .85rem; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--border); color: var(--muted); }
+  .health.ok { color: var(--ok); background: var(--ok-bg); border-color: transparent; }
+  .health.down { color: var(--bad); background: var(--bad-bg); border-color: transparent; }
+  .grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); }
+  button { font: inherit; color: inherit; cursor: pointer; }
+  .choice { text-align: left; background: var(--surface); border: 2px solid var(--border); border-radius: var(--radius); padding: 14px 16px; }
+  .choice:hover { border-color: var(--accent); }
+  .choice[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent); }
+  .choice b { display: block; font-size: 1.02rem; }
+  .choice span { display: block; color: var(--muted); font-size: .88rem; margin-top: 2px; }
+  .choice em { display: inline-block; margin-top: 8px; font-style: normal; font-size: .78rem; color: var(--muted);
+    background: var(--surface-2); border-radius: 6px; padding: 2px 8px; }
+  .drop { background: var(--surface); border: 2px dashed var(--border); border-radius: var(--radius); padding: 28px 16px; text-align: center; }
+  .drop.over { border-color: var(--accent); background: var(--surface-2); }
+  .drop.disabled { opacity: .55; }
+  .drop strong { display: block; font-size: 1.05rem; }
+  .drop small { color: var(--muted); }
+  .link { background: none; border: none; padding: 0; color: var(--accent); text-decoration: underline; }
+  ul.files { list-style: none; padding: 0; margin: 12px 0 0; display: grid; gap: 6px; max-height: 190px; overflow: auto; }
+  ul.files li { display: flex; justify-content: space-between; gap: 12px; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 6px 10px; font-size: .9rem; }
+  ul.files li span:last-child { color: var(--muted); white-space: nowrap; }
+  .actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 14px; }
+  .primary { background: var(--accent); color: var(--accent-text); border: none; border-radius: 10px; padding: 11px 20px; font-weight: 600; }
+  .primary:disabled { opacity: .45; cursor: not-allowed; }
+  .secondary { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 10px 16px; text-decoration: none; color: var(--text); font-weight: 600; display: inline-block; }
+  .secondary:hover { border-color: var(--accent); }
+  .status { margin-top: 14px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; }
+  .status.error { border-color: var(--bad); background: var(--bad-bg); color: var(--bad); }
+  progress { width: 100%; height: 10px; margin-top: 8px; accent-color: var(--accent); }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
+  .tiles { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); margin-bottom: 12px; }
+  .tile { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; }
+  .tile small { color: var(--muted); display: block; font-size: .8rem; }
+  .tile b { font-size: 1.6rem; line-height: 1.2; font-variant-numeric: tabular-nums; }
+  .hero { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 14px; }
+  .hero b { font-size: 2rem; }
+  .tablewrap { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); max-height: 520px; overflow-y: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: .92rem; }
+  th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  th { position: sticky; top: 0; background: var(--surface-2); font-size: .78rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+  tr:last-child td { border-bottom: none; }
+  td.num { font-variant-numeric: tabular-nums; }
+  td.grow { width: 40%; min-width: 160px; }
+  .badge { display: inline-block; border-radius: 999px; padding: 2px 10px; font-size: .82rem; font-weight: 600; }
+  .badge.ok { color: var(--ok); background: var(--ok-bg); }
+  .badge.bad { color: var(--bad); background: var(--bad-bg); }
+  .badge.warn { color: var(--warn); background: var(--warn-bg); }
+  .meter { background: var(--bar-track); border-radius: 999px; height: 8px; overflow: hidden; min-width: 80px; }
+  .meter i { display: block; height: 100%; background: var(--bar); border-radius: 999px; }
+  .train { display: flex; gap: 6px; flex-wrap: wrap; margin: 12px 0 4px; }
+  .car { flex: 1 1 70px; border: 2px solid var(--border); border-radius: 10px; padding: 8px 6px; text-align: center; background: var(--surface-2); }
+  .car b { display: block; font-size: 1.05rem; }
+  .car small { color: var(--muted); font-size: .75rem; }
+  .car.top { border-color: var(--bad); background: var(--bad-bg); }
+  .car.top small { color: var(--bad); font-weight: 600; }
+  .timeline { display: flex; gap: 2px; margin: 4px 0 12px; }
+  .timeline i { flex: 1; height: 26px; border-radius: 4px; background: var(--ok); opacity: .75; }
+  .timeline i.bad { background: var(--bad); opacity: 1; }
+  .legend { display: flex; gap: 16px; font-size: .82rem; color: var(--muted); margin-bottom: 12px; }
+  .legend i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+  .note { color: var(--muted); font-size: .85rem; margin-top: 10px; }
+  .history button { width: 100%; text-align: left; display: flex; justify-content: space-between; gap: 12px; background: var(--surface);
+    border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; margin-bottom: 6px; font-size: .9rem; }
+  .history button:hover { border-color: var(--accent); }
+  .history span.meta { color: var(--muted); white-space: nowrap; }
+  [hidden] { display: none !important; }
+  :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Train Condition Monitoring</h1>
+    <span id="health" class="health" role="status">Checking server…</span>
+  </header>
+  <p class="lead">Pick a subsystem, drop in the data file, and read the result. Nothing to install or configure. Uploaded files are deleted as soon as the analysis finishes.</p>
+
+  <h2><span class="step">1</span>Choose a subsystem</h2>
+  <div id="choices" class="grid"></div>
+
+  <h2><span class="step">2</span>Add your data</h2>
+  <div id="drop" class="drop disabled" tabindex="0" role="button" aria-label="Choose files to upload">
+    <strong id="dropTitle">Choose a subsystem first</strong>
+    <small id="dropHint">Then drag files here, or <button type="button" class="link" id="browse">browse your computer</button>.</small>
+    <input id="picker" type="file" hidden>
+  </div>
+  <ul id="fileList" class="files"></ul>
+  <div class="actions">
+    <button id="run" class="primary" disabled>Run analysis</button>
+    <button id="clear" class="secondary" hidden>Clear files</button>
+  </div>
+  <div id="status" class="status" hidden role="status" aria-live="polite"></div>
+
+  <section id="resultSection" hidden>
+    <h2><span class="step">3</span>Result <span id="resultFor" class="note" style="margin:0;font-weight:400"></span></h2>
+    <div id="result"></div>
+    <div class="actions">
+      <a id="download" class="primary" style="text-decoration:none" download>Download predictions CSV</a>
+      <span class="note" style="margin:0">Same file format the hackathon submission asks for.</span>
+    </div>
+  </section>
+
+  <section class="history" id="historySection" hidden>
+    <h2>Recent analyses</h2>
+    <div id="history"></div>
+  </section>
+</main>
+
+<script>
+"use strict";
+const API = "/api/v1";
+const SUBSYSTEMS = {
+  acv:  { label: "Air-conditioning (ACV)", task: "Find the car with a refrigerant leak", ext: [".xlsx"], multi: false, hint: "One Excel workbook (.xlsx) for the train" },
+  door: { label: "Doors", task: "Find door cycles with abnormal resistance", ext: [".csv"], multi: false, hint: "One continuous recording (.csv)" },
+  rail: { label: "Rail corrugation", task: "Classify each run: Normal, Side I or Side II", ext: [".csv"], multi: true, hint: "One or many recordings (.csv)" },
+  shm:  { label: "Structural health (SHM)", task: "Estimate cumulative fatigue damage", ext: [".csv"], multi: true, hint: "One or many stress recordings (.csv)" },
+};
+let selected = null, files = [], busy = false;
+const $ = (id) => document.getElementById(id);
+
+function h(tag, attrs = {}, ...children) {
+  const node = document.createElement(tag);
+  for (const [key, value] of Object.entries(attrs)) {
+    if (value == null || value === false) continue;
+    if (key === "class") node.className = value;
+    else if (key === "style") node.style.cssText = value;
+    else if (key.startsWith("on")) node.addEventListener(key.slice(2), value);
+    else node.setAttribute(key, value);
+  }
+  for (const child of children.flat()) if (child != null) node.append(child);
+  return node;
+}
+const fmtSize = (n) => n > 1048576 ? (n / 1048576).toFixed(1) + " MB" : Math.max(1, Math.round(n / 1024)) + " KB";
+const fmtTime = (iso) => { const d = new Date(iso); return isNaN(d) ? iso : d.toLocaleTimeString(); };
+const ext = (name) => (name.match(/(\.[a-z0-9]+)$/i) || [""])[0].toLowerCase();
+
+async function getJson(path) {
+  const response = await fetch(path, { headers: { Accept: "application/json" } });
+  const body = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(body.error || body.detail || `Request failed (${response.status})`);
+  return body;
+}
+
+// ---- step 1 -----------------------------------------------------------------
+function renderChoices() {
+  $("choices").replaceChildren(...Object.entries(SUBSYSTEMS).map(([key, meta]) =>
+    h("button", { type: "button", class: "choice", "aria-pressed": String(selected === key), onclick: () => choose(key) },
+      h("b", {}, meta.label), h("span", {}, meta.task), h("em", {}, meta.hint))));
+}
+function choose(key) {
+  if (busy) return;
+  selected = key; files = [];
+  const meta = SUBSYSTEMS[key];
+  $("picker").multiple = meta.multi; $("picker").accept = meta.ext.join(",");
+  $("drop").classList.remove("disabled");
+  $("dropTitle").textContent = meta.multi ? "Drag your files here" : "Drag your file here";
+  renderChoices(); renderFiles(); setStatus(null);
+}
+
+// ---- step 2 -----------------------------------------------------------------
+function addFiles(list) {
+  if (!selected || busy) return;
+  const meta = SUBSYSTEMS[selected];
+  const incoming = [...list];
+  const wrong = incoming.filter((f) => !meta.ext.includes(ext(f.name)));
+  if (wrong.length) {
+    setStatus(`${wrong[0].name} is not a ${meta.ext.join(" / ")} file. ${meta.label} needs: ${meta.hint.toLowerCase()}.`, true);
+    return;
+  }
+  files = meta.multi ? [...files, ...incoming] : incoming.slice(0, 1);
+  setStatus(!meta.multi && incoming.length > 1 ? "This subsystem takes one file, so only the first was kept." : null);
+  renderFiles();
+}
+function renderFiles() {
+  $("fileList").replaceChildren(...files.map((f) => h("li", {}, h("span", {}, f.name), h("span", {}, fmtSize(f.size)))));
+  $("run").disabled = busy || !files.length;
+  $("run").textContent = files.length > 1 ? `Run analysis on ${files.length} files` : "Run analysis";
+  $("clear").hidden = !files.length;
+}
+function setStatus(message, isError = false, progress = null) {
+  const box = $("status");
+  box.hidden = !message; box.className = "status" + (isError ? " error" : "");
+  box.replaceChildren();
+  if (!message) return;
+  box.append(h("div", {}, message));
+  if (progress != null) box.append(h("progress", progress < 0 ? {} : { max: "1", value: String(progress) }));
+}
+
+function upload(subsystem, list, onProgress) {
+  return new Promise((resolve, reject) => {
+    const form = new FormData();
+    form.append("subsystem", subsystem);
+    list.forEach((f) => form.append("files", f, f.name));
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", `${API}/analyses`);
+    xhr.setRequestHeader("Accept", "application/json");
+    xhr.upload.onprogress = (e) => e.lengthComputable && onProgress(e.loaded / e.total);
+    xhr.onload = () => {
+      let body = {}; try { body = JSON.parse(xhr.responseText); } catch (_) {}
+      xhr.status < 300 ? resolve(body) : reject(new Error(body.error || body.detail || `Upload failed (${xhr.status})`));
+    };
+    xhr.onerror = () => reject(new Error("Could not reach the server. Is the backend running?"));
+    xhr.send(form);
+  });
+}
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+async function run() {
+  if (busy || !files.length) return;
+  busy = true; renderFiles(); $("resultSection").hidden = true;
+  try {
+    const job = await upload(selected, files, (p) => setStatus(p < 1 ? `Uploading… ${Math.round(p * 100)}%` : "Upload complete. Starting analysis…", false, p));
+    let record;
+    const started = Date.now();
+    for (;;) {
+      record = await getJson(`${API}/analyses/${job.id}`);
+      if (record.status === "completed" || record.status === "failed") break;
+      const seconds = Math.round((Date.now() - started) / 1000);
+      setStatus(`Analysing${files.length > 1 ? ` ${files.length} files` : ""}… ${seconds}s. Large rail uploads take a few seconds per file.`, false, -1);
+      await sleep(1200);
+    }
+    if (record.status === "failed") throw new Error(record.error || "The analysis failed.");
+    setStatus(null); showRecord(record); loadHistory();
+  } catch (error) {
+    setStatus(error.message, true);
+  } finally {
+    busy = false; renderFiles();
+  }
+}
+
+// ---- step 3 -----------------------------------------------------------------
+const badge = (text) => h("span", { class: "badge " + (text === "Normal" ? "ok" : text === "Side I" ? "warn" : "bad") }, text);
+const meter = (fraction) => h("div", { class: "meter" }, h("i", { style: `width:${Math.max(0, Math.min(1, fraction)) * 100}%` }));
+const tile = (label, value) => h("div", { class: "tile" }, h("small", {}, label), h("b", {}, String(value)));
+function table(headers, rows) {
+  return h("div", { class: "tablewrap" }, h("table", {},
+    h("thead", {}, h("tr", {}, headers.map((t) => h("th", { scope: "col" }, t)))),
+    h("tbody", {}, rows.map((cells) => h("tr", {}, cells.map((c) => c instanceof Node && c.tagName === "TD" ? c : h("td", {}, c)))))));
+}
+const num = (text) => h("td", { class: "num" }, text);
+const grow = (node) => h("td", { class: "grow" }, node);
+
+function viewAcv(r) {
+  const cars = [...r.rankedCars].sort((a, b) => a.rank - b.rank);
+  const byId = [...cars].sort((a, b) => a.carId.localeCompare(b.carId, undefined, { numeric: true }));
+  const scores = cars.map((c) => c.score).filter((s) => typeof s === "number");
+  const lo = Math.min(...scores), hi = Math.max(...scores);
+  const hasScores = scores.length === cars.length && hi > lo;
+  return [
+    h("div", { class: "card" },
+      h("div", { class: "hero" }, h("span", {}, "Most likely leaking:"), h("b", {}, `Car ${cars[0].carId}`),
+        cars[1] ? h("span", { class: "note", style: "margin:0" }, `next to check: car ${cars[1].carId}`) : null),
+      h("div", { class: "train", "aria-label": "Cars in train order" }, byId.map((c) =>
+        h("div", { class: "car" + (c.rank === 1 ? " top" : "") }, h("b", {}, c.carId), h("small", {}, c.rank === 1 ? "inspect first" : `rank ${c.rank}`)))),
+      h("p", { class: "note" }, "Cars are compared with each other over the same period, so the ranking is an inspection order, not a probability.")),
+    h("div", { style: "height:12px" }),
+    table(hasScores ? ["Rank", "Car", "Anomaly score", ""] : ["Rank", "Car"], cars.map((c) => hasScores
+      ? [num(String(c.rank)), `Car ${c.carId}`, num(c.score.toFixed(2)), grow(meter((c.score - lo) / (hi - lo)))]
+      : [num(String(c.rank)), `Car ${c.carId}`])),
+  ];
+}
+function viewDoor(r) {
+  const clock = (iso) => { const d = new Date(iso); return isNaN(d) ? iso : d.toISOString().slice(11, 23); };
+  return [
+    h("div", { class: "tiles" }, tile("Door cycles found", r.totalSegments), tile("Abnormal resistance", r.abnormalSegments), tile("Normal", r.normalSegments)),
+    h("div", { class: "card" },
+      h("div", { class: "legend" }, h("span", {}, h("i", { style: "background:var(--ok)" }), "Normal"), h("span", {}, h("i", { style: "background:var(--bad)" }), "Abnormal resistance"), h("span", {}, "one block per cycle, in time order")),
+      h("div", { class: "timeline" }, r.segments.map((s) => h("i", { class: s.prediction === "Normal" ? "" : "bad", title: `${s.id}: ${s.prediction}` })))),
+    h("div", { style: "height:12px" }),
+    table(["Cycle", "Start", "End", "Result", "Confidence"], r.segments.map((s) =>
+      [s.id.replace("seg_", "#"), num(clock(s.startTime)), num(clock(s.endTime)), badge(s.prediction), num(s.confidence == null ? "–" : s.confidence.toFixed(3))])),
+  ];
+}
+function viewRail(r) {
+  const c = r.statusCounts || { normal: 0, sideI: 0, sideII: 0 };
+  const pct = (p) => p == null ? "–" : (p * 100).toFixed(1) + "%";
+  return [
+    h("div", { class: "tiles" }, tile("Recordings", r.files.length), tile("Normal", c.normal), tile("Side I corrugation", c.sideI), tile("Side II corrugation", c.sideII)),
+    table(["File", "Result", "Normal", "Side I", "Side II"], r.files.map((f) => {
+      const p = f.probabilities || {};
+      return [f.fileId, badge(f.prediction), num(pct(p["Normal"])), num(pct(p["Side I"])), num(pct(p["Side II"]))];
+    })),
+    h("p", { class: "note" }, "Percentages are the model's confidence in each class for that recording."),
+  ];
+}
+function viewShm(r) {
+  const max = Math.max(...r.files.map((f) => f.prediction), 0);
+  const sorted = [...r.files].sort((a, b) => b.prediction - a.prediction);
+  return [
+    h("div", { class: "tiles" }, tile("Recordings", r.files.length), tile("Highest damage", max.toFixed(4)), tile("File with highest damage", sorted[0] ? sorted[0].fileId : "–")),
+    table(["File", "Cumulative fatigue damage", ""], r.files.map((f) => [f.fileId, num(f.prediction.toPrecision(6)), grow(meter(max ? f.prediction / max : 0))])),
+    h("p", { class: "note" }, "Bars compare files with each other. The downloaded CSV keeps full numeric precision."),
+  ];
+}
+const VIEWS = { acv: viewAcv, door: viewDoor, rail: viewRail, shm: viewShm };
+
+function showRecord(record) {
+  $("result").replaceChildren(...VIEWS[record.subsystem](record.result));
+  $("resultFor").textContent = `${SUBSYSTEMS[record.subsystem].label} · ${record.filename}`;
+  $("download").href = `${API}/analyses/${record.id}/predictions.csv`;
+  $("resultSection").hidden = false;
+  $("resultSection").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+async function loadHistory() {
+  try {
+    const records = (await getJson(`${API}/analyses?limit=12`)).filter((r) => r.status === "completed");
+    $("historySection").hidden = !records.length;
+    $("history").replaceChildren(...records.map((r) =>
+      h("button", { type: "button", onclick: () => showRecord(r) },
+        h("span", {}, `${SUBSYSTEMS[r.subsystem].label} · ${r.filename}`), h("span", { class: "meta" }, fmtTime(r.createdAt)))));
+  } catch (_) { /* history is optional */ }
+}
+async function checkHealth() {
+  const el = $("health");
+  try { await getJson(`${API}/health`); el.textContent = "Server ready"; el.className = "health ok"; }
+  catch (_) { el.textContent = "Server not reachable"; el.className = "health down"; }
+}
+
+// ---- wiring -----------------------------------------------------------------
+const drop = $("drop");
+const openPicker = () => { if (selected && !busy) $("picker").click(); };
+$("browse").addEventListener("click", (e) => { e.stopPropagation(); openPicker(); });
+drop.addEventListener("click", openPicker);
+drop.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openPicker(); } });
+["dragenter", "dragover"].forEach((t) => drop.addEventListener(t, (e) => { e.preventDefault(); if (selected) drop.classList.add("over"); }));
+["dragleave", "drop"].forEach((t) => drop.addEventListener(t, (e) => { e.preventDefault(); drop.classList.remove("over"); }));
+drop.addEventListener("drop", (e) => {
+  if (!selected) { setStatus("Choose a subsystem first (step 1), then drop the file again.", true); return; }
+  addFiles(e.dataTransfer.files);
+});
+window.addEventListener("dragover", (e) => e.preventDefault());
+window.addEventListener("drop", (e) => e.preventDefault());
+$("picker").addEventListener("change", (e) => { addFiles(e.target.files); e.target.value = ""; });
+$("clear").addEventListener("click", () => { files = []; renderFiles(); setStatus(null); });
+$("run").addEventListener("click", run);
+
+renderChoices(); checkHealth(); loadHistory();
+</script>
+</body>
+</html>

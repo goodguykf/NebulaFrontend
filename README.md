@@ -4,7 +4,18 @@ Expo / React Native Web app for the NebulaX train condition-monitoring models: p
 subsystem (ACV, Door, Rail corrugation, SHM), upload the data file, read the result and
 download the prediction CSV.
 
-## Run
+## Quick start (whole app, no Node needed)
+
+`backend/frontend_dist/` already holds a build of this app, so Python alone is enough:
+double-click `start_app.bat` on Windows, or
+
+```bash
+cd backend
+pip install -r requirements.txt
+uvicorn main:app            # http://127.0.0.1:8000
+```
+
+## Frontend development
 
 ```bash
 npm ci
@@ -14,7 +25,7 @@ npm run typecheck
 
 ## Connecting to the backend
 
-The app talks to the FastAPI backend (`backend/` in the team submission) through:
+The app talks to the FastAPI backend in [`backend/`](backend/README.md) through:
 
 | Call | Purpose |
 |---|---|
@@ -35,8 +46,8 @@ Two ways to run the full app:
 
 1. **One process (used for the demo):** export the web build into the backend and start it.
    ```bash
-   EXPO_PUBLIC_USE_MOCK_API=false EXPO_PUBLIC_API_URL= npx expo export -p web --output-dir ../backend/frontend_dist
-   cd ../backend && uvicorn main:app          # open http://127.0.0.1:8000
+   EXPO_PUBLIC_USE_MOCK_API=false EXPO_PUBLIC_API_URL= npx expo export -p web --output-dir backend/frontend_dist
+   cd backend && pip install -r requirements.txt && uvicorn main:app    # open http://127.0.0.1:8000
    ```
 2. **Separate dev servers:** `uvicorn main:app` in `backend/`, then
    `EXPO_PUBLIC_USE_MOCK_API=false EXPO_PUBLIC_API_URL=http://127.0.0.1:8000 npx expo start --web`.

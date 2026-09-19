@@ -1,0 +1,19 @@
+# API
+fastapi==0.141.1
+uvicorn[standard]==0.53.0
+python-multipart==0.0.32
+
+# Inference. Pinned to the versions the model artifacts were trained and pickled with.
+numpy==2.1.3
+pandas==2.3.3
+scipy==1.16.3
+scikit-learn==1.7.2
+joblib==1.5.2
+lightgbm==4.7.0      # Rail: unpickles lgbm_tuned_a / lgbm_tuned_b
+xgboost==3.4.1       # Rail: unpickles xgb_tuned
+numba==0.62.1        # SHM: rainflow counting
+openpyxl==3.1.5      # ACV: .xlsx workbooks
+
+# Tests
+pytest==8.4.2
+httpx==0.28.1

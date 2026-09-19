@@ -13,3 +13,7 @@ android
 .env
 .env*.local
 .DS_Store
+
+# Python API; not part of the static web image
+backend/
+start_app.bat
